@@ -28,7 +28,7 @@
 
 \- \[ ] Create .env from .env.example with real keys
 
-\- \[ ] Select initial domain/corpus for the knowledge base
+\- \[x] Domain selected: EV Technology
 
 \- \[ ] Start Week 1: ingestion pipeline (loaders, chunker, embeddings, ChromaDB)
 

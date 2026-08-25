@@ -13,3 +13,4 @@ streamlit
 pydantic
 tavily-python
 requests
+google-generativeai

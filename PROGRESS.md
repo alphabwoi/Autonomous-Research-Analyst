@@ -56,3 +56,37 @@
 
 \- \[ ] Add more EV documents (target 15-25 total, currently have 3)
 
+
+
+
+
+
+
+
+
+\## Week 1 — COMPLETE ✅
+
+\- Ingestion (Mohit): loaders.py, chunker.py, metadata.py — tested, working
+
+\- Retrieval (Aayush): embeddings.py, vector\_store.py, retriever.py — tested, working
+
+\- Both branches merged into main
+
+\- Full integration test passing: 941 real EV chunks indexed, 3 test queries
+
+&#x20; returned highly relevant results (best: 0.41 distance on a specific technical query)
+
+\- Knowledge base: 3 EV documents (arXiv x2, IEA Global EV Outlook 2024)
+
+
+
+\## Next Steps
+
+\- \[ ] Add more EV documents (target 15-25 total, currently have 3)
+
+\- \[ ] Start Week 2: LangGraph agent state + Planner + Router nodes
+
+
+
+
+

@@ -42,3 +42,17 @@
 
 \- Full roadmap in roadmap.md (uploaded separately / in project docs).
 
+
+
+\## Week 1 — Ingestion (Mohit)
+
+\- \[x] loaders.py — loads PDFs from data/raw, extracts text
+
+\- \[x] chunker.py — splits text into \~1000-char overlapping chunks
+
+\- \[x] metadata.py — enriches chunks with domain, hash, title, preview
+
+\- \[x] Tested end-to-end: 3 EV PDFs → 941 enriched chunks
+
+\- \[ ] Add more EV documents (target 15-25 total, currently have 3)
+

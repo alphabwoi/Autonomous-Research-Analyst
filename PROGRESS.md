@@ -88,5 +88,29 @@
 
 
 
+\## Week 2 — COMPLETE ✅
 
+\- state.py: shared ResearchState model
+
+\- planner.py: breaks query into sub-questions, flags freshness need (Gemini 3.6 Flash)
+
+\- router.py: decides local/web/both/clarify routing (Aayush)
+
+\- rag\_tool.py, web\_search.py: tool wrappers, Tavily excludes reddit/quora/pinterest (Aayush)
+
+\- graph.py: LangGraph wiring Planner -> Router -> END
+
+\- Verified end-to-end: compound query correctly split, routed to "both" with clear reasoning
+
+
+
+\## Next Steps
+
+\- \[ ] Week 3: wire Retriever into the graph (calls rag\_tool/web\_search based on route\_decision)
+
+\- \[ ] Week 3: build Grader (evaluates evidence quality)
+
+\- \[ ] Week 3: build Rewriter + retry loop
+
+\- \[ ] Week 3: build Synthesizer + Report Compiler
 

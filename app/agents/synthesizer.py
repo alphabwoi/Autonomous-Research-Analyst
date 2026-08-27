@@ -1,7 +1,9 @@
 import google.generativeai as genai
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 SYNTHESIS_PROMPT = """You are a research synthesis assistant. Given a user's original query, a set of sub-questions, and evidence gathered for each, write a clear, well-organized answer.
 
@@ -23,7 +25,7 @@ def format_evidence_block(evidence: dict) -> str:
     return "\n".join(lines)
 
 def synthesize(state: dict) -> dict:
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-3.6-flash")
 
     original_query = state.get("original_query", "")
     evidence = state.get("evidence", {})

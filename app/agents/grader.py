@@ -85,6 +85,7 @@ def grade(state: dict) -> dict:
     return {
         "grade_score": parsed.get("grade_score", 0.0),
         "grade_passed": parsed.get("grade_passed", False),
+        "grade_reasoning": parsed.get("reasoning", ""),
     }
 
 

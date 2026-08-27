@@ -37,7 +37,7 @@ if __name__ == "__main__":
             "What are the primary causes and technical challenges of EV battery degradation?",
             "What is the latest news and recent developments regarding solid-state batteries for electric vehicles?"
         ],
-        "synthesized_answer": "EV battery degradation is primarily driven by lithium plating, SEI layer growth, and cathode cracking [Source: local_doc_12]. Fast charging worsens this due to heat and plating risk [Source: local_doc_7]. On the solid-state front, Toyota announced a pilot production line in August 2026 targeting 2027 vehicle integration [Source: web_toyota_2026].",
+        "final_report": "EV battery degradation is primarily driven by lithium plating, SEI layer growth, and cathode cracking [Source: local_doc_12]. Fast charging worsens this due to heat and plating risk [Source: local_doc_7]. On the solid-state front, Toyota announced a pilot production line in August 2026 targeting 2027 vehicle integration [Source: web_toyota_2026].",
         "evidence": {
             "q1": [{"source": "local_doc_12", "content": "..."}, {"source": "local_doc_7", "content": "..."}],
             "q2": [{"source": "web_toyota_2026", "content": "..."}]

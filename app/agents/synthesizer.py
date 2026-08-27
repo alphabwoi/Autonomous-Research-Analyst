@@ -28,7 +28,7 @@ def synthesize(state: dict) -> dict:
     if not chunks:
         return {
             "final_report": "No evidence was retrieved for this question. "
-                             "Unable to generate a grounded report."
+                                   "Unable to generate a grounded report."
         }
 
     evidence_lines = []
@@ -40,12 +40,7 @@ def synthesize(state: dict) -> dict:
     prompt = _SYNTHESIS_PROMPT.format(query=query, evidence=evidence_text)
     report_text = call_llm(prompt).strip()
 
-    references = "\n\n## References\n" + "\n".join(
-        f"[{i}] {c.get('source_filename', 'unknown')}"
-        for i, c in enumerate(chunks, start=1)
-    )
-
-    return {"final_report": report_text + references}
+    return {"final_report": report_text}
 
 
 if __name__ == "__main__":

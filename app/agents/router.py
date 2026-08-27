@@ -1,22 +1,9 @@
 """
-Router node — decides HOW to retrieve evidence for the query.
-Runs after the Planner. Uses the Planner's initial guess
-(retrieval_strategy, needs_freshness) plus its own lightweight check
-to make the final routing decision.
-
-This is a "node" in LangGraph terms: a function that takes the
-current state, does work, and returns updates to merge into state.
+Router node — decides HOW to retrieve evidence. Uses Groq.
 """
 
-import os
 import json
-import google.generativeai as genai
-from dotenv import load_dotenv
-
-load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-_model = genai.GenerativeModel("gemini-3.6-flash")
+from llm_utils import call_llm
 
 _ROUTER_PROMPT = """You are a routing assistant for a research system. You are given:
 - A user's question
@@ -24,10 +11,9 @@ _ROUTER_PROMPT = """You are a routing assistant for a research system. You are g
 - Whether the question likely needs current/recent information
 
 Decide the FINAL routing decision from these options:
-- "local": use only the local document library (good for stable, established topics)
-- "web": use only live web search (good for current events, recent prices, breaking news)
-- "both": use both local documents AND web search (good for questions needing both
-  background context and current data)
+- "local": use only the local document library
+- "web": use only live web search
+- "both": use both local documents AND web search
 - "clarify": the question is too vague/ambiguous to route confidently
 
 Respond ONLY with valid JSON in this exact format, no other text:
@@ -43,10 +29,6 @@ Needs freshness: {freshness}
 
 
 def route(state: dict) -> dict:
-    """
-    LangGraph node function. Takes the current state (after Planner has run),
-    calls the LLM to make the final routing decision.
-    """
     query = state["original_query"]
     strategy_guess = state.get("retrieval_strategy", "local")
     needs_freshness = state.get("needs_freshness", False)
@@ -57,8 +39,7 @@ def route(state: dict) -> dict:
         freshness=needs_freshness,
     )
 
-    response = _model.generate_content(prompt)
-    raw_text = response.text.strip()
+    raw_text = call_llm(prompt).strip()
 
     if raw_text.startswith("```"):
         raw_text = raw_text.split("```")[1]
@@ -82,8 +63,6 @@ def route(state: dict) -> dict:
 
 
 if __name__ == "__main__":
-    # Quick manual test — requires GOOGLE_API_KEY in .env
-    # Simulates what state would look like after Planner has already run.
     test_state = {
         "original_query": "What are the latest EV battery degradation challenges?",
         "retrieval_strategy": "both",

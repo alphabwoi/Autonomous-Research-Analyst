@@ -1,116 +1,70 @@
-\# Progress Log — Autonomous Research Analyst
-
-
-
-\## Status: Phase 0 (Setup) — in progress
-
-
-
-\## Completed
-
-\- \[x] Project folder + venv created (Python 3.14.7)
-
-\- \[x] Full folder structure scaffolded (app/, frontend/, data/, tests/, docs/)
-
-\- \[x] Git initialized, .gitignore added, first commit made
-
-\- \[x] requirements.txt written and installed (fastapi, langgraph, chromadb, streamlit, sentence-transformers, etc.)
-
-\- \[x] Sanity check passed: fastapi, langgraph, chromadb, streamlit all import correctly
-
-
-
-\## Next Steps
-
-\- \[ ] Choose LLM provider (Gemini Flash / OpenAI small / Groq) and add SDK to requirements.txt
-
-\- \[ ] Get API keys: LLM provider + Tavily (web search)
-
-\- \[ ] Create .env from .env.example with real keys
-
-\- \[x] Domain selected: EV Technology
-
-\- \[ ] Start Week 1: ingestion pipeline (loaders, chunker, embeddings, ChromaDB)
-
-
-
-\## Notes
-
-\- On Windows using cmd (not PowerShell) — commands given accordingly.
-
-\- Using local ChromaDB, local sentence-transformers embeddings (no OpenAI embedding cost).
-
-\- Full roadmap in roadmap.md (uploaded separately / in project docs).
-
-
-
-\## Week 1 — Ingestion (Mohit)
-
-\- \[x] loaders.py — loads PDFs from data/raw, extracts text
-
-\- \[x] chunker.py — splits text into \~1000-char overlapping chunks
-
-\- \[x] metadata.py — enriches chunks with domain, hash, title, preview
-
-\- \[x] Tested end-to-end: 3 EV PDFs → 941 enriched chunks
-
-\- \[ ] Add more EV documents (target 15-25 total, currently have 3)
-
-
-
-
-
-
-
-
-
-\## Week 1 — COMPLETE ✅
-
-\- Ingestion (Mohit): loaders.py, chunker.py, metadata.py — tested, working
-
-\- Retrieval (Aayush): embeddings.py, vector\_store.py, retriever.py — tested, working
-
-\- Both branches merged into main
-
-\- Full integration test passing: 941 real EV chunks indexed, 3 test queries
-
-&#x20; returned highly relevant results (best: 0.41 distance on a specific technical query)
-
-\- Knowledge base: 3 EV documents (arXiv x2, IEA Global EV Outlook 2024)
-
-
-
-\## Next Steps
-
-\- \[ ] Add more EV documents (target 15-25 total, currently have 3)
-
-\- \[ ] Start Week 2: LangGraph agent state + Planner + Router nodes
-
-
-
-\## Week 2 — COMPLETE ✅
-
-\- state.py: shared ResearchState model
-
-\- planner.py: breaks query into sub-questions, flags freshness need (Gemini 3.6 Flash)
-
-\- router.py: decides local/web/both/clarify routing (Aayush)
-
-\- rag\_tool.py, web\_search.py: tool wrappers, Tavily excludes reddit/quora/pinterest (Aayush)
-
-\- graph.py: LangGraph wiring Planner -> Router -> END
-
-\- Verified end-to-end: compound query correctly split, routed to "both" with clear reasoning
-
-
-
-\## Next Steps
-
-\- \[ ] Week 3: wire Retriever into the graph (calls rag\_tool/web\_search based on route\_decision)
-
-\- \[ ] Week 3: build Grader (evaluates evidence quality)
-
-\- \[ ] Week 3: build Rewriter + retry loop
-
-\- \[ ] Week 3: build Synthesizer + Report Compiler
-
+# Progress Log — Autonomous Research Analyst
+
+## Status: Week 3 core complete, entering Week 4
+
+## Completed
+
+### Phase 0 — Setup
+- [x] Project folder + venv (Python 3.14.7)
+- [x] Full folder structure scaffolded
+- [x] Git initialized, .gitignore added
+- [x] requirements.txt written and installed
+- [x] GitHub repo connected, Aayush added as collaborator
+- [x] Domain selected: EV Technology
+
+### Week 1 — Ingestion + Retrieval
+- [x] loaders.py, chunker.py, metadata.py (Mohit)
+- [x] embeddings.py, vector_store.py, retriever.py (Aayush)
+- [x] Verified end-to-end with real EV PDFs, ChromaDB working
+
+### Week 2 — Planner + Router
+- [x] state.py: shared ResearchState model
+- [x] planner.py: breaks query into sub-questions, flags freshness need
+- [x] router.py: decides local/web/both/clarify routing (Aayush)
+- [x] rag_tool.py, web_search.py: tool wrappers, excludes reddit/quora/pinterest (Aayush)
+- [x] graph.py: LangGraph wiring Planner -> Router -> END
+- [x] Verified: compound query correctly split and routed
+
+### Week 3 — Retrieval, Grading, Synthesis
+- [x] retriever_node.py: wires rag_tool/web_search into graph
+- [x] grader.py: evaluates evidence quality (0.0-1.0 score)
+- [x] rewriter.py: rewrites query on low grade, retry loop with MAX_RETRIES=2
+- [x] synthesizer.py: writes cited report from evidence
+- [x] report_compiler.py: final structured report with references
+- [x] Full graph verified end-to-end: query -> plan -> route -> retrieve ->
+      grade -> retry (up to 2x) -> synthesize -> compiled report with citations
+- [x] Switched LLM provider: Gemini -> Groq (openai/gpt-oss-120b), due to
+      Gemini free-tier daily limit (20 requests/day too restrictive)
+- [x] llm_utils.py: shared Groq call wrapper with retry/spacing logic
+- [x] Expanded corpus: 3 -> ~15+ EV documents (arXiv papers, IEA reports,
+      Tesla impact reports, industry whitepapers)
+- [x] Reindexed ChromaDB with expanded corpus, retrieval quality improved
+      (multiple distinct sources now cited per report)
+
+## Known Issues / Notes
+- Grade scores running low (0.1-0.2) even with decent retrieved evidence —
+  grader may be too strict, or rewriter's rewritten queries becoming overly
+  academic/complex and hurting retrieval match. Not blocking; system still
+  produces real cited reports. Worth tuning grader threshold or rewriter
+  prompt later if time allows.
+- data/raw/ PDFs got committed to git (one file 53MB, near GitHub's 50MB
+  warning threshold). Should add data/raw/ to .gitignore and keep PDFs
+  local-only going forward — repo bloat risk otherwise.
+- Using Windows cmd (not PowerShell) throughout — commands given accordingly.
+- Each collaborator uses their own .env / API keys (Groq + Tavily), never shared.
+
+## Next Steps — Week 4
+- [ ] Fix .gitignore to exclude data/raw/ (stop committing large PDFs)
+- [ ] Build Streamlit UI (frontend/streamlit_app.py) — query input, report display
+- [ ] Build FastAPI backend (app/main.py, app/api/routes.py)
+- [ ] Containerize with Docker (Dockerfile, docker-compose.yml)
+- [ ] Build baseline RAG (simple Query -> Retrieve -> LLM -> Report, no agent loop)
+      for comparison against the agentic pipeline
+- [ ] Run evaluation: retrieval metrics (Precision@K, Recall@K, MRR)
+- [ ] Run evaluation: agent performance (avg retries, route accuracy, latency, cost)
+- [ ] Compare baseline vs agentic pipeline results, write up in docs/evaluation.md
+
+## Next Steps — Documentation (buffer, after Week 4)
+- [ ] README.md, docs/architecture.md, docs/setup.md, docs/user-guide.md,
+      docs/developer-guide.md, docs/evaluation.md, project report, slides,
+      demo script, future-scope doc

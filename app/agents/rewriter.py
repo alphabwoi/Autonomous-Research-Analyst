@@ -1,48 +1,58 @@
-import google.generativeai as genai
-import os
+"""
+Rewriter node — rewrites query when grader fails. Uses Groq.
+"""
 
-genai.configure(api_key=os.getenv("AQ.Ab8RN6K-qs8VdD6ciVM6dWSYRpirq6VaDo3EE9XTfASzF9CM-Q"))
+from llm_utils import call_llm
 
-REWRITE_PROMPT = """You are a query rewriting assistant. A research sub-question was searched but the retrieved evidence was graded as insufficient.
+_REWRITER_PROMPT = """The following research question did not return good enough search
+results. Rewrite it to be more specific, use better search terms, or approach it from
+a different angle that might retrieve more relevant evidence.
 
-Original sub-question: {sub_question}
+Respond with ONLY the rewritten question, no explanation, no quotes.
+
+Original question: {query}
 Grader's feedback: {grade_reasoning}
-Grader's score: {grade_score}
+"""
 
-Rewrite the sub-question to be more specific, more searchable, and more likely to retrieve relevant evidence. Keep it as a single clear question. Return ONLY the rewritten question, nothing else."""
+MAX_RETRIES = 2
+
 
 def rewrite_query(state: dict) -> dict:
-    model = genai.GenerativeModel("gemini-1.5-flash")
-
-    sub_question = state.get("current_sub_question", state.get("sub_questions", [""])[0])
+    query = state.get("rewritten_query") or state.get("original_query", "")
     grade_reasoning = state.get("grade_reasoning", "No specific feedback provided.")
-    grade_score = state.get("grade_score", 0.0)
+    current_retries = state.get("retry_count", 0)
 
-    prompt = REWRITE_PROMPT.format(
-        sub_question=sub_question,
-        grade_reasoning=grade_reasoning,
-        grade_score=grade_score
-    )
+    prompt = _REWRITER_PROMPT.format(query=query, grade_reasoning=grade_reasoning)
+    new_query = call_llm(prompt).strip().strip('"')
 
-    response = model.generate_content(prompt)
-    rewritten = response.text.strip()
+    return {
+        "rewritten_query": new_query,
+        "sub_questions": [new_query],
+        "retry_count": current_retries + 1,
+    }
 
-    retry_count = state.get("retry_count", 0) + 1
 
-    state["rewritten_query"] = rewritten
-    state["retry_count"] = retry_count
+def should_retry(state: dict) -> str:
+    grade_passed = state.get("grade_passed", False)
+    retry_count = state.get("retry_count", 0)
 
-    return state
+    if grade_passed:
+        return "synthesize"
+    if retry_count >= MAX_RETRIES:
+        return "synthesize"
+    return "retry"
 
 
 if __name__ == "__main__":
     test_state = {
-        "current_sub_question": "What are EV battery problems?",
-        "grade_reasoning": "Too vague — evidence retrieved was generic and didn't address specific degradation mechanisms.",
-        "grade_score": 0.35,
-        "retry_count": 0
+        "original_query": "EV batteries",
+        "grade_reasoning": "Too vague, evidence was generic.",
+        "retry_count": 0,
     }
+
     result = rewrite_query(test_state)
     print("Rewriter output:")
-    print("  rewritten_query:", result["rewritten_query"])
-    print("  retry_count:", result["retry_count"])
+    for key, value in result.items():
+        print(f"  {key}: {value}")
+
+    print(f"\nshould_retry decision: {should_retry({**test_state, **result, 'grade_passed': False})}")

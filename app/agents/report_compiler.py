@@ -2,7 +2,7 @@ from datetime import datetime
 
 def compile_report(state: dict) -> dict:
     original_query = state.get("original_query", "Untitled Query")
-    synthesized_answer = state.get("synthesized_answer", "")
+    synthesized_answer = state.get("final_report", "")
     sub_questions = state.get("sub_questions", [])
     evidence = state.get("evidence", {})
 

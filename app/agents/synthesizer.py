@@ -1,63 +1,64 @@
-import google.generativeai as genai
-import os
-from dotenv import load_dotenv
-load_dotenv()
+"""
+Synthesizer node — writes the final cited report. Uses Groq.
+"""
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+from llm_utils import call_llm
 
-SYNTHESIS_PROMPT = """You are a research synthesis assistant. Given a user's original query, a set of sub-questions, and evidence gathered for each, write a clear, well-organized answer.
+_SYNTHESIS_PROMPT = """You are a research analyst writing a report. Using ONLY the evidence
+provided below, write a structured report answering the question. Do not use any
+outside knowledge — if the evidence doesn't cover something, say so rather than
+guessing.
 
-Original query: {original_query}
+Structure your report with these sections:
+1. Summary (2-3 sentences)
+2. Key Findings (bullet points, cite sources by number like [1], [2])
+3. Limitations (what the evidence doesn't cover)
 
-Evidence by sub-question:
-{evidence_block}
+Question: {query}
 
-Write a synthesized answer that addresses the original query directly. Cite sources inline using [Source: X] notation where X is the source identifier given with each piece of evidence. Be factual — only use the evidence provided, do not add outside knowledge."""
+Evidence:
+{evidence}
+"""
 
-def format_evidence_block(evidence: dict) -> str:
-    lines = []
-    for sub_q, items in evidence.items():
-        lines.append(f"\nSub-question: {sub_q}")
-        for item in items:
-            source = item.get("source", "unknown")
-            content = item.get("content", "")
-            lines.append(f"  - [Source: {source}] {content}")
-    return "\n".join(lines)
 
 def synthesize(state: dict) -> dict:
-    model = genai.GenerativeModel("gemini-3.6-flash")
+    query = state.get("original_query", "")
+    chunks = state.get("retrieved_chunks", [])
 
-    original_query = state.get("original_query", "")
-    evidence = state.get("evidence", {})
+    if not chunks:
+        return {
+            "final_report": "No evidence was retrieved for this question. "
+                             "Unable to generate a grounded report."
+        }
 
-    evidence_block = format_evidence_block(evidence)
+    evidence_lines = []
+    for i, c in enumerate(chunks, start=1):
+        source = c.get("source_filename", "unknown")
+        evidence_lines.append(f"[{i}] (source: {source}) {c['text'][:400]}")
+    evidence_text = "\n\n".join(evidence_lines)
 
-    prompt = SYNTHESIS_PROMPT.format(
-        original_query=original_query,
-        evidence_block=evidence_block
+    prompt = _SYNTHESIS_PROMPT.format(query=query, evidence=evidence_text)
+    report_text = call_llm(prompt).strip()
+
+    references = "\n\n## References\n" + "\n".join(
+        f"[{i}] {c.get('source_filename', 'unknown')}"
+        for i, c in enumerate(chunks, start=1)
     )
 
-    response = model.generate_content(prompt)
-    synthesized_answer = response.text.strip()
-
-    state["synthesized_answer"] = synthesized_answer
-
-    return state
+    return {"final_report": report_text + references}
 
 
 if __name__ == "__main__":
     test_state = {
-        "original_query": "What are the main challenges in EV battery degradation, and what's the latest news on solid-state batteries?",
-        "evidence": {
-            "What are the primary causes and technical challenges of EV battery degradation?": [
-                {"source": "local_doc_12", "content": "Battery degradation is primarily caused by lithium plating, SEI layer growth, and cathode particle cracking during charge cycles."},
-                {"source": "local_doc_7", "content": "Fast charging accelerates degradation due to increased heat generation and lithium plating risk."}
-            ],
-            "What is the latest news and recent developments regarding solid-state batteries for electric vehicles?": [
-                {"source": "web_toyota_2026", "content": "Toyota announced in August 2026 a pilot production line for solid-state batteries targeting 2027 vehicle integration."}
-            ]
-        }
+        "original_query": "What are EV battery degradation challenges?",
+        "retrieved_chunks": [
+            {"text": "Battery degradation affects EV range over time due to capacity fade from repeated charge cycles.",
+             "source_filename": "GlobalEVOutlook2024.pdf"},
+            {"text": "Ultrasonic methods can detect internal battery damage before visible failure occurs.",
+             "source_filename": "2601.08075v2.pdf"},
+        ],
     }
+
     result = synthesize(test_state)
-    print("Synthesizer output:")
-    print(result["synthesized_answer"])
+    print("Synthesizer output:\n")
+    print(result["final_report"])

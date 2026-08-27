@@ -114,3 +114,27 @@
 
 \- \[ ] Week 3: build Synthesizer + Report Compiler
 
+
+
+\## Week 3 — CORE COMPLETE ✅
+
+\- retriever\_node.py, grader.py: wired into graph
+
+\- rewriter.py, synthesizer.py, report\_compiler.py: complete
+
+\- Switched LLM provider Gemini -> Groq (openai/gpt-oss-120b) due to Gemini free-tier daily limit
+
+\- Full graph verified: real query -> retry loop -> cited report generated
+
+\- Known issue: grade scores low (0.1-0.2) due to thin corpus (3 docs) — expect improvement once more EV docs added
+
+
+
+\## Next Steps
+
+\- \[ ] Add more EV documents (target 15-25)
+
+\- \[ ] Week 4: Streamlit UI, FastAPI backend, Docker
+
+\- \[ ] Week 4: baseline RAG comparison, evaluation metrics
+

@@ -9,13 +9,21 @@ _GRADER_PROMPT = """You are an evidence quality grader for a research system. Gi
 question and a set of retrieved evidence snippets, judge how well the evidence
 covers the question.
 
-Score from 0.0 to 1.0 based on:
-- Relevance: does the evidence actually address the question?
-- Completeness: is enough evidence present, or are there obvious gaps?
-- Redundancy: is the evidence repetitive without adding new information?
+Grade generously. This is a small local document library, not the entire internet —
+evidence does not need to be exhaustive or perfectly comprehensive to pass. Score
+based on:
+- Relevance: does the evidence meaningfully relate to the question's topic?
+- Usefulness: could a reasonable answer be written using this evidence, even if
+  it doesn't cover every angle of the question?
+- Redundancy: only penalize if the evidence is almost entirely repetitive with
+  zero new information across snippets.
 
-A score >= 0.6 means the evidence is good enough to write an answer from.
-A score < 0.6 means a retry (different search query) is recommended.
+Partial or topic-adjacent evidence that still lets you say something substantive
+should score 0.5 or higher. Only score below 0.4 if the evidence is genuinely
+off-topic or unusable.
+
+A score >= 0.5 means the evidence is good enough to write an answer from.
+A score < 0.5 means a retry (different search query) is recommended.
 
 Respond ONLY with valid JSON in this exact format, no other text:
 {{
@@ -44,7 +52,7 @@ def grade(state: dict) -> dict:
 
     evidence_text = "\n".join(
         f"- [{c.get('retrieval_source', 'unknown')}] {c['text'][:200]}"
-        for c in chunks[:10]
+        for c in chunks[:15]  # cap at 15 to keep prompt size sane
     )
 
     prompt = _GRADER_PROMPT.format(query=query, evidence=evidence_text)

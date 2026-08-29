@@ -5,8 +5,9 @@ Rewriter node — rewrites query when grader fails. Uses Groq.
 from llm_utils import call_llm
 
 _REWRITER_PROMPT = """The following research question did not return good enough search
-results. Rewrite it to be more specific, use better search terms, or approach it from
-a different angle that might retrieve more relevant evidence.
+results. Rewrite it as a SHORTER, SIMPLER question using different keywords —
+plain, direct search-engine-style phrasing, not academic jargon. Keep it under
+15 words. Do not add extra technical qualifiers or conditions.
 
 Respond with ONLY the rewritten question, no explanation, no quotes.
 

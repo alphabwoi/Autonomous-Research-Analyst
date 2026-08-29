@@ -30,14 +30,14 @@ def retrieve_evidence(state: dict) -> dict:
 
     for question in sub_questions:
         if route_decision in ("local", "both"):
-            local_results = rag_search(question, top_k=3)
+            local_results = rag_search(question, top_k=6)
             for r in local_results:
                 r["retrieval_source"] = "local"
                 r["sub_question"] = question
             all_chunks.extend(local_results)
 
         if route_decision in ("web", "both"):
-            web_results = web_search(question, max_results=3)
+            web_results = web_search(question, max_results=5)
             for r in web_results:
                 r["retrieval_source"] = "web"
                 r["sub_question"] = question
